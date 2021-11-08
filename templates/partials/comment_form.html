@@ -1,5 +1,8 @@
 
-<form>
+<form action='/playlists/comments' method='POST'>
+  <!-- hidden field is an input tag that has a value that isn't visible in the browser -->
+  <!-- adding a hidden input field that sends in the parent playlist id -->
+  <input type='hidden' value='{{ playlist._id }}' name='playlist_id'/>
   <fieldset>
       <legend>Add a Comment</legend>
       <!-- TITLE -->
