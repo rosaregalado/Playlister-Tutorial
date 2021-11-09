@@ -16,6 +16,16 @@
         <p><form method='POST' action='/playlists/{{ playlist._id }}/delete'>
             <button class='btn btn-primary' type='submit'>Delete</button>
         </form></p>
+
+        <hr>
+
+        <!-- Add new partial here: -->
+        <!-- Comment form -->
+        {% include 'partials/comment_form.html' %}
+
+        {% for comment in comments%}
+            {% include 'partials/comment.html' %}
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

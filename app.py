@@ -1,13 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-
+import os
 # root route
 app = Flask(__name__)
 
-client = MongoClient()
+
+host = os.environ.get("MONGODB_URI")
+client = MongoClient(host)
 db = client.Playlister
 playlists = db.playlists
+comments = db.comments
 
 def video_url_creator(id_lst):
   videos = []
@@ -26,7 +29,8 @@ def playlists_index():
 def playlists_show(playlist_id):
   '''Show a single playlist.'''
   playlist =  playlists.find_one({'_id': ObjectId(playlist_id)})
-  return render_template('playlists_show.html', playlist=playlist)
+  playlist_comments = comments.find({'playlist_id': ObjectId(playlist_id)})
+  return render_template('playlists_show.html', playlist=playlist, comments=playlist_comments)
 
 @app.route('/playlists/<playlist_id>/edit')
 def playlists_edit(playlist_id):
@@ -79,16 +83,34 @@ def playlists_submit():
     'video_ids': video_ids,
     'rating': request.form.get('rating')
   }
-  playlists.insert_one(playlist)
+  print(playlist)
+  playlist_id = playlists.insert_one(playlist).inserted_id
   #redirects to playlist show page
-  return redirect(url_for('playlists_show', playlist_id=playlist['_id']))
+  return redirect(url_for('playlists_show', playlist_id=playlist_id))
 
-# @app.route('/')
-# def index():
-#   """Return homepage."""
-#   return render_template('home.html', msg='Flask is cool!!')
+
+# Add this header to distinguish Comment routes from Playlist routes
+########## COMMENT ROUTES ##########
+
+@app.route('/playlists/comments', methods=['POST'])
+def comments_new():
+  """Submit a new comment."""
+  comment = {
+    'playlist_id': ObjectId(request.form.get('playlist_id')),
+    'title': request.form.get('title'),
+    'content': request.form.get('content')
+  }
+  comments.insert_one(comment)
+  return redirect(url_for('playlists_show', playlist_id=request.form.get('playlist_id')))
+
+@app.route('/playlists/comments/<comment_id>', methods=['POST'])
+def delete_comment(comment_id):
+  comments.delete_one({'_id': ObjectId(comment_id)})
+  return redirect(url_for('playlists_show', playlist_id=request.form.get('playlist_id')))
+
+
 
 if __name__ == '__main__':
   app.run(debug=True)
-
+  # app.run(debug=True, host='0.0.0.0', port=os.environ.get('PORT', 5000))
 
