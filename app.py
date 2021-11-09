@@ -112,22 +112,6 @@ def delete_comment(comment_id):
 
 
 
-# Add this header to distinguish Comment routes from Playlist routes
-########## COMMENT ROUTES ##########
-
-@app.route('/playlists/comments', methods=['POST'])
-def comments_new():
-  """Submit a new comment."""
-  comment = {
-    'playlist_id': ObjectId(request.form.get('playlist_id')),
-    'title': request.form.get('title'),
-    'content': request.form.get('content')
-  }
-  comments.insert_one(comment)
-  return redirect(url_for('playlists_show', playlist_id=request.form.get('playlist_id')))
-
-
-
 if __name__ == '__main__':
   app.run(debug=True)
 
